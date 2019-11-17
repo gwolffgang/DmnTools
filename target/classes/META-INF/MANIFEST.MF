@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Built-By: gwolffga
+Build-Jdk: 1.8.0_201-2-redhat
+Created-By: Maven Integration for Eclipse
+

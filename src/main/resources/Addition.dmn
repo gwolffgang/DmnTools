@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/1.0" id="AdditionDRD" name="Addition DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="3.3.5">
+  <decision id="Addition" name="Additions">
+    <extensionElements>
+      <biodi:bounds x="156" y="81" width="180" height="80" />
+    </extensionElements>
+    <decisionTable id="DecisionTable_1pc8lj8" hitPolicy="OUTPUT ORDER">
+      <input id="InputClause_163pjlj" label="Einkommen">
+        <inputExpression id="LiteralExpression_0z9mcq4" typeRef="integer">
+          <text>einkommen</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_0hfyhod" label="Abschlag" name="abschlag" typeRef="long" />
+      <output id="OutputClause_13cdu1t" label="Kapitalgeber" name="kapitalgeber" typeRef="string">
+        <outputValues id="UnaryTests_1m4qro5">
+          <text>"Ulrich","Gisela","Thomas"</text>
+        </outputValues>
+      </output>
+      <output id="OutputClause_0cjp7fr" label="Farbe" name="farbe" typeRef="string">
+        <outputValues id="UnaryTests_1vm26eg">
+          <text>"violett","rot","blau","grün"</text>
+        </outputValues>
+      </output>
+      <rule id="DecisionRule_0xqjmgm">
+        <inputEntry id="UnaryTests_159rtkx">
+          <text>&gt;3000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ebo7yf">
+          <text>10</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_03m5pi9">
+          <text>"Ulrich"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1krhk48">
+          <text>"rot"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1mg0xxr">
+        <inputEntry id="UnaryTests_1r1fy75">
+          <text>&gt;9000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0a6fm7y">
+          <text>30</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1sauary">
+          <text>"Thomas"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1fx8a9v">
+          <text>"grün"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0l71cxv">
+        <inputEntry id="UnaryTests_113sxhy">
+          <text>&lt;16000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1r051l7">
+          <text>-80</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ml7mky">
+          <text>"Gisela"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_18sdy0q">
+          <text>"blau"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_08f56u2">
+        <inputEntry id="UnaryTests_022m8ik">
+          <text>&gt;9000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0o4biwq">
+          <text>40</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1820e2t">
+          <text>"Gisela"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0u6jxqx">
+          <text>"violett"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1qzmg12">
+        <inputEntry id="UnaryTests_1omrvf3">
+          <text>&gt;5000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_10f0dry">
+          <text>20</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1liwcee">
+          <text>"Ulrich"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_02wcl3j">
+          <text>"violett"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0evx2p2">
+        <inputEntry id="UnaryTests_1x37tl3">
+          <text>&lt;9000</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_01yrhkb">
+          <text>-90</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0hvbgtt">
+          <text>"Thomas"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1eqxnyc">
+          <text>"rot"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

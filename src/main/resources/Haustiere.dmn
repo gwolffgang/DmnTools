@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="HaustiereDmn" name="Haustiere Dmn" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="3.3.5">
+  <decision id="Haustier" name="Haustier Decision">
+    <extensionElements>
+      <biodi:bounds x="408" y="81" width="180" height="80" />
+      <biodi:edge source="Tier">
+        <biodi:waypoints x="401" y="239" />
+        <biodi:waypoints x="465" y="161" />
+      </biodi:edge>
+      <biodi:edge source="Person">
+        <biodi:waypoints x="652" y="240" />
+        <biodi:waypoints x="532" y="161" />
+      </biodi:edge>
+      <biodi:edge source="InputData_0998lnf">
+        <biodi:waypoints x="608" y="416" />
+        <biodi:waypoints x="516" y="165" />
+      </biodi:edge>
+      <biodi:edge source="Tiernummer">
+        <biodi:waypoints x="493" y="388" />
+        <biodi:waypoints x="503" y="161" />
+      </biodi:edge>
+      <biodi:edge source="InputData_01k0757">
+        <biodi:waypoints x="688" y="127" />
+        <biodi:waypoints x="588" y="132" />
+      </biodi:edge>
+    </extensionElements>
+    <informationRequirement>
+      <requiredDecision href="#Tier" />
+    </informationRequirement>
+    <informationRequirement>
+      <requiredDecision href="#Person" />
+    </informationRequirement>
+    <informationRequirement>
+      <requiredInput href="#InputData_0998lnf" />
+    </informationRequirement>
+    <informationRequirement>
+      <requiredDecision href="#Tiernummer" />
+    </informationRequirement>
+    <informationRequirement>
+      <requiredInput href="#InputData_01k0757" />
+    </informationRequirement>
+    <decisionTable id="decisionTable_Haustier" hitPolicy="FIRST">
+      <input id="InputClause_0jt2r5l" label="Berechnung" camunda:inputVariable="berechnung">
+        <inputExpression id="LiteralExpression_1xtt0nt" typeRef="double">
+          <text>(tier-Nummer + besitzer-Nummer) / ramba-zamba</text>
+        </inputExpression>
+      </input>
+      <input id="input_1" label="Tier">
+        <inputExpression id="inputExpression_1" typeRef="string">
+          <text>tier-Typ</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_15e1vk5">
+          <text>"cat","dog"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_0qm6dd5" label="Besitzer" camunda:inputVariable="tier-Besitzer">
+        <inputExpression id="LiteralExpression_0hz2fmc" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <output id="output_1" label="Pet" name="pet" typeRef="string" />
+      <rule id="DecisionRule_1tnhy4o">
+        <description>Tim und Struppi</description>
+        <inputEntry id="UnaryTests_1cjjlgs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0v69q62">
+          <text>"dog"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0z3lfpl">
+          <text>"Tintin"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_016syg2">
+          <text>"Snowy"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1hsz4q7">
+        <description>Obelix und Idefix</description>
+        <inputEntry id="UnaryTests_08ygdw4">
+          <text>2</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12ap868">
+          <text>"dog"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1t6zg1a">
+          <text>"Obelix"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0hlb5xw">
+          <text>"Idefix"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1b9o1uz">
+        <description>Lucky Luke und Rantanplan</description>
+        <inputEntry id="UnaryTests_04wk2xw">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1dbftya">
+          <text>"dog"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11lmm94">
+          <text>"Lucky Luke"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_011jojv">
+          <text>"Rantanplan"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0umwnoo">
+        <description>Jon und Garfield</description>
+        <inputEntry id="UnaryTests_1e6fl4w">
+          <text>3, 4</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1hb2w02">
+          <text>"cat"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0jbm3hv">
+          <text>"Jonathan Q. Arbuckle","Jonathan Arbuckle","Jon"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_12xbnlh">
+          <text>"Garfield"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0idozt4">
+        <description>Lucky Luke und Jolly Jumper</description>
+        <inputEntry id="UnaryTests_0cuczct">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10zicu9">
+          <text>"horse"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_01udua6">
+          <text>"Lucky Luke"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0p8o5ub">
+          <text>"Jolly Jumper"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_19wnm56">
+        <description>Fiete von Peter</description>
+        <inputEntry id="UnaryTests_019fz7l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0j2w4fs">
+          <text>"fly"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0x4ze0d">
+          <text>"Peter Lustig"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_18ix9o4">
+          <text>"Fiete die Fruchtfliege"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fmdfx1">
+        <description>Peter Lustig und Willi</description>
+        <inputEntry id="UnaryTests_10i6f32">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1fw2a47">
+          <text>"dog"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1kh70db">
+          <text>"Peter Lustig"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_14a38r5">
+          <text>"Willi"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ozdvkj">
+        <description>Sabine von Peter</description>
+        <inputEntry id="UnaryTests_0la86z4">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11g720i">
+          <text>"spider"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1aursp9">
+          <text>"Peter Lustig"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_10r8sp2">
+          <text>"Sabine die Kreuzspinne"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0v4v9mv">
+        <description>sonstige</description>
+        <inputEntry id="UnaryTests_1najx4p">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ln80o8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1cs9wvq">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dhvdrm">
+          <text>"no match"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="Tier" name="Tier Decision">
+    <extensionElements>
+      <biodi:bounds x="278" y="239" width="180" height="80" />
+      <biodi:edge source="Tiernummer">
+        <biodi:waypoints x="473" y="388" />
+        <biodi:waypoints x="403" y="319" />
+      </biodi:edge>
+    </extensionElements>
+    <informationRequirement>
+      <requiredDecision href="#Tiernummer" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_Tier" hitPolicy="FIRST">
+      <input id="InputClause_097ioxk" label="TierNummer">
+        <inputExpression id="LiteralExpression_1w5pfrj" typeRef="integer">
+          <text>tier-Nummer</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_0fj8xnu" label="Tier" name="tier-Typ" typeRef="string">
+        <outputValues id="UnaryTests_0cjcxfw">
+          <text>"dog","cat","horse"</text>
+        </outputValues>
+      </output>
+      <rule id="DecisionRule_1bku8ki">
+        <description>1 = Hund</description>
+        <inputEntry id="UnaryTests_1tx317p">
+          <text>1</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1uo0zu7">
+          <text>"dog"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0w6b3yt">
+        <inputEntry id="UnaryTests_0eyiyov">
+          <text>2</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1p7eb7f">
+          <text>"cat"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_10i9q95">
+        <inputEntry id="UnaryTests_08oysm1">
+          <text>3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0qslmrj">
+          <text>"horse"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0a1x6ci">
+        <inputEntry id="UnaryTests_1drs2ul">
+          <text>4</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1tza3g8">
+          <text>"fly"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_08gv3tu">
+        <inputEntry id="UnaryTests_0yeottc">
+          <text>5</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_06laqc5">
+          <text>"spider"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_06nlhpg">
+        <inputEntry id="UnaryTests_1sm3mtv">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1g5zl5r">
+          <text>"robot"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="Person" name="Person Decision">
+    <extensionElements>
+      <biodi:bounds x="596" y="240" width="180" height="80" />
+      <biodi:edge source="InputData_0998lnf">
+        <biodi:waypoints x="652" y="408" />
+        <biodi:waypoints x="704" y="320" />
+      </biodi:edge>
+    </extensionElements>
+    <informationRequirement>
+      <requiredInput href="#InputData_0998lnf" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_Person">
+      <input id="InputClause_1bgjqts" label="BesitzerNummer">
+        <inputExpression id="LiteralExpression_1966f8d" typeRef="integer">
+          <text>besitzer-Nummer</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_1ahtu2k" label="Besitzer" name="tier-Besitzer" typeRef="string">
+        <outputValues id="UnaryTests_1xd859t">
+          <text>"Tintin","Lucky Luke","Obelix","Jonathan Q. Arbuckle","Jonathan Arbuckle","Jon"</text>
+        </outputValues>
+      </output>
+      <rule id="DecisionRule_0d835cw">
+        <description></description>
+        <inputEntry id="UnaryTests_0q6gbpx">
+          <text>1</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1v48jno">
+          <text>"Tintin"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_139frjc">
+        <inputEntry id="UnaryTests_1lfnmp7">
+          <text>2</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_02puiqz">
+          <text>"Lucky Luke"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_03b6imx">
+        <inputEntry id="UnaryTests_0o9j18y">
+          <text>3</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ba8uem">
+          <text>"Obelix"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1wtn0n3">
+        <inputEntry id="UnaryTests_131mel3">
+          <text>4</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ecuep0">
+          <text>"Jonathan Q. Arbuckle"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0t11iqi">
+        <inputEntry id="UnaryTests_17rycae">
+          <text>5</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1vby0nu">
+          <text>"Jonathan Arbuckle"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_114mm22">
+        <inputEntry id="UnaryTests_0abivhm">
+          <text>6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1koeupb">
+          <text>"Jon"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_07c98dx">
+        <inputEntry id="UnaryTests_1bdby5v">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0vzorv5">
+          <text>"Peter Lustig"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <inputData id="InputData_0998lnf" name="besitzerNummer">
+    <extensionElements>
+      <biodi:bounds x="608" y="408" width="125" height="45" />
+    </extensionElements>
+  </inputData>
+  <decision id="Tiernummer" name="Tiernummer Decision">
+    <extensionElements>
+      <biodi:bounds x="401" y="388" width="180" height="80" />
+      <biodi:edge source="InputData_0m8s65p">
+        <biodi:waypoints x="315" y="431" />
+        <biodi:waypoints x="401" y="433" />
+      </biodi:edge>
+    </extensionElements>
+    <informationRequirement>
+      <requiredInput href="#InputData_0m8s65p" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_0zo7maw">
+      <input id="InputClause_0jn1y3j" label="Tiername deutsch">
+        <inputExpression id="LiteralExpression_1rn1mrr" typeRef="string">
+          <text>tierNameDeutsch</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_1euutbt" label="Tier Nummer" name="tier-Nummer" typeRef="integer" />
+      <rule id="DecisionRule_01ceqy1">
+        <inputEntry id="UnaryTests_1kdazn2">
+          <text>"Hund"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0q4mqoo">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0q870mn">
+        <inputEntry id="UnaryTests_15b8t2h">
+          <text>"Katze"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0fdcyqi">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1q9wmts">
+        <inputEntry id="UnaryTests_1glzol0">
+          <text>"Pferd"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ruea8k">
+          <text>3</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_156a13u">
+        <inputEntry id="UnaryTests_00ne9pw">
+          <text>"Fliege"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1vutet5">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_14hvbbd">
+        <inputEntry id="UnaryTests_1p16bu3">
+          <text>"Spinne"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ry0djk">
+          <text>5</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_06ipg60">
+        <inputEntry id="UnaryTests_1nvb62b">
+          <text>"Roboter"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ld3unx">
+          <text>6</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <inputData id="InputData_0m8s65p" name="tierNameDeutsch">
+    <extensionElements>
+      <biodi:bounds x="190" y="406" width="125" height="45" />
+    </extensionElements>
+  </inputData>
+  <inputData id="InputData_01k0757" name="ramba-zamba">
+    <extensionElements>
+      <biodi:bounds x="688" y="100" width="125" height="45" />
+    </extensionElements>
+  </inputData>
+</definitions>
