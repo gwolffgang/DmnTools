@@ -1,6 +1,5 @@
 package de.materna.dmntools;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.camunda.bpm.model.dmn.DmnModelInstance;
@@ -8,7 +7,7 @@ import org.camunda.bpm.model.dmn.instance.Decision;
 import org.camunda.bpm.model.dmn.instance.DecisionRule;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
 import org.camunda.bpm.model.dmn.instance.Definitions;
-import org.camunda.bpm.model.dmn.instance.DmnElement;
+import org.camunda.bpm.model.dmn.instance.Expression;
 import org.camunda.bpm.model.dmn.instance.InformationRequirement;
 import org.camunda.bpm.model.dmn.instance.Input;
 import org.camunda.bpm.model.dmn.instance.Output;
@@ -19,24 +18,22 @@ public interface DmnMetaModel {
 	String addInputNameToInputVariablesString(final boolean withVarType, final Input input,
 			final String inputVariablesString);
 
-	void checkInputOutputMatches(final DecisionTable decisionTable, final List<DmnElement> list);
-
-	List<List<String>> combineStrings(final List<String> list, final int elemsToCombine,
-			final String original);
+	void checkInputOutputMatches(final Decision decision, final List<Input> list,
+			final boolean withMatches, final boolean withNonMatches);
 
 	boolean existsTableType(final String tableType);
 
 	List<DecisionTable> getAllDecisionTables();
 
-	String getCorrectedFormula(final Input input);
+	List<Input> getAllInputs();
 
-	Decision getCurrentDecision();
-
-	DecisionTable getCurrentDecisionTable();
+	List<Output> getAllOutputs();
 
 	Definitions getDefinitions();
 
 	DmnModelInstance getDmnModelInstance();
+
+	String getExpressionVariableTypeRef(final Expression expression);
 
 	List<String> getFilteredPossibleInputNames(final String expressionText);
 
@@ -44,16 +41,14 @@ public interface DmnMetaModel {
 
 	List<Output> getFormulaOutputs(final Input input);
 
-	List<DmnElement> getInAndOutputs(boolean matched, boolean deep,
-			final DecisionTable decisionTable);
+	List<Input> getInputs(final boolean deep, final boolean withMatches,
+			final boolean withNonMatches, final Decision decision);
 
-	String getInputVariableName(final Input input);
+	String getInputVariableName(final Input input, final String part);
 
 	String getInputVariablesString(final boolean withVarType);
 
-	String getInputVariablesString(final boolean withVarType, final DecisionTable decisionTable);
-
-	String getInputVariableType(final Input input);
+	String getInputVariablesString(final boolean withVarType, final Decision decision);
 
 	Decision getMainDecision();
 
@@ -61,35 +56,31 @@ public interface DmnMetaModel {
 
 	Variable getOutputVariable(final DecisionTable decisionTable);
 
-	String getOutputVariableName(final DecisionTable decisionTable);
+	String getOutputVariableName(final Decision decision);
 
 	String getOutputVariablesString(final boolean withVarType,
 			final DecisionTable currentDecisionTable);
 
-	List<DecisionTable> getRequirementDecisionTables(
-			final List<InformationRequirement> requirementsList);
+	List<Decision> getRequirementDecisions(final List<InformationRequirement> requirementsList);
 
-	List<DmnElement> getRequirementInAndOutputs(
-			final Collection<InformationRequirement> requirementsList, final boolean matched);
+	List<Input> getRequirementInputs(final List<InformationRequirement> requirementsList,
+			final boolean withMatches, final boolean withNonMatches);
 
-	String getTypeRefToReturn(final DecisionTable decisionTable, final DmnEngine dmnEngine);
+	String getTypeRefToReturn();
 
 	boolean matchesOutput(final String inputName, final List<Output> outputs);
 
-	void removeInputOutputMatches(final List<DmnElement> list,
-			final Collection<InformationRequirement> requirementsList);
-
-	void removeOutputInputMatches(final List<DmnElement> list);
-
-	void setCurrentDecision(final Decision currentDecision);
-
-	void setCurrentDecisionTable(final DecisionTable decisionTable);
+	void removeInputOutputMatches(final List<Input> list,
+			final List<InformationRequirement> requirementsList, final boolean withMatches,
+			final boolean withNonMatches);
 
 	void setDefinitions(final Definitions definitions);
 
 	void setDmnModelInstance(final DmnModelInstance dmnModelInstance);
 
-	boolean usesCollection(final String collectionType);
+	boolean usesCollection();
 
 	boolean usesDate();
+
+	boolean usesFormula();
 }

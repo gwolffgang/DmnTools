@@ -11,9 +11,9 @@ public interface DmnTools {
 
 	void consoleText(final String tag, final String text);
 
-	void dmn2Java(final File source);
-
 	void dmn2Java(final File source, final DmnEngine dmnEngine);
+
+	void dmn2Java(final String source);
 
 	void dmn2JavaAll();
 

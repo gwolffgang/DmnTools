@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/1.0" id="DefinitionsEignungAlsAbteilungsleiter" name="Eignung als Abteilungsleiter" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="3.4.1">
+  <decision id="DecisionEignungAlsAbteilungsleiter" name="Bewertung">
+    <extensionElements>
+      <biodi:bounds x="346" y="188" width="180" height="80" />
+      <biodi:edge source="Bewerber">
+        <biodi:waypoints x="436" y="372" />
+        <biodi:waypoints x="436" y="268" />
+      </biodi:edge>
+      <biodi:edge source="InputData_0rzlopl">
+        <biodi:waypoints x="436" y="126" />
+        <biodi:waypoints x="436" y="188" />
+      </biodi:edge>
+      <biodi:edge source="InputData_1186f82">
+        <biodi:waypoints x="281" y="227" />
+        <biodi:waypoints x="346" y="227" />
+      </biodi:edge>
+    </extensionElements>
+    <informationRequirement>
+      <requiredDecision href="#Bewerber" />
+    </informationRequirement>
+    <informationRequirement>
+      <requiredInput href="#InputData_0rzlopl" />
+    </informationRequirement>
+    <informationRequirement>
+      <requiredInput href="#InputData_1186f82" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_1pjrs8g" hitPolicy="FIRST">
+      <input id="InputClause_1ohrmq4" label="Angestellt 6+ Jahre?">
+        <inputExpression id="LiteralExpression_0opydnd" typeRef="boolean">
+          <text>angestelltSeitMehrAlsSechsJahren</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0z47owv" label="Bewerber Beurteilung">
+        <inputExpression id="LiteralExpression_0z5ujow" typeRef="long">
+          <text>erreichtePunktzahl</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0q4xxw3" label="Faktorisierbarkeit">
+        <inputExpression id="LiteralExpression_0mh9heb" typeRef="double">
+          <text>faktor</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_1kveppo" label="Eignung" name="eignung" typeRef="string" />
+      <rule id="DecisionRule_0mao9b2">
+        <description></description>
+        <inputEntry id="UnaryTests_0hf9jxl">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0tn9jjz">
+          <text>&lt; 70</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dnq8s4">
+          <text>&lt; 0.6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_05ryojs">
+          <text>"niedrig"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1hi8evv">
+        <inputEntry id="UnaryTests_13vw945">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0nl3jd1">
+          <text>&lt; 70</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0zchude">
+          <text>&lt;= 0.8</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1it2g38">
+          <text>"mittel"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0swvzi5">
+        <inputEntry id="UnaryTests_1xvs1jw">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0kivdd9">
+          <text>&lt; 70</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_19n15pw">
+          <text>&gt; 0.8</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0nxtury">
+          <text>"hoch"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_17bkjcs">
+        <description></description>
+        <inputEntry id="UnaryTests_1h10q1k">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qwo5u7">
+          <text>&lt;= 85</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1m3e4o9">
+          <text>&lt; 0.6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ilg8ci">
+          <text>"niedrig"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1i4350z">
+        <inputEntry id="UnaryTests_1lghwgs">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0bgjqa3">
+          <text>&lt;= 85</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1gm8oi4">
+          <text>&lt;= 0.7</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1d1ecwz">
+          <text>"mittel"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1207eo2">
+        <inputEntry id="UnaryTests_0v0pulw">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_02a1b78">
+          <text>&lt;= 85</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1vhm6sq">
+          <text>&gt; 0.7</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_145s6pk">
+          <text>"hoch"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0ucumpl">
+        <inputEntry id="UnaryTests_1mf4059">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ykw0h4">
+          <text>&gt; 85</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0deyzaj">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1thom3t">
+          <text>"sehr hoch"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1gl0ahl">
+        <description></description>
+        <inputEntry id="UnaryTests_0g9ruvz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0yrvpw9">
+          <text>&lt;= 50</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1am3lsa">
+          <text>&lt; 0.5</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ok2ivx">
+          <text>"niedrig"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1j6w71s">
+        <inputEntry id="UnaryTests_1tydmx0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0huc0ec">
+          <text>&lt;= 50</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1vx5jnl">
+          <text>&lt;= 0.6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_19kam4h">
+          <text>"mittel"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1maarfw">
+        <inputEntry id="UnaryTests_0wgpi4n">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qcna10">
+          <text>&lt;= 50</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0khwwwf">
+          <text>&gt; 0.6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0qjxx0i">
+          <text>"hoch"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1t76vrf">
+        <description></description>
+        <inputEntry id="UnaryTests_05vojwr">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1s07na3">
+          <text>&gt; 50</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11fkybu">
+          <text>&lt; 0.6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0e47agq">
+          <text>"niedrig"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_10wqze5">
+        <inputEntry id="UnaryTests_1mjnvo1">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_06zmhei">
+          <text>&gt; 50</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1xgjx2w">
+          <text>&lt;= 0.7</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0bhz7wu">
+          <text>"mittel"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ucxu99">
+        <inputEntry id="UnaryTests_05cryn8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1xrbhz1">
+          <text>&gt; 50</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_021im0o">
+          <text>&gt; 0.7</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1em8mig">
+          <text>"hoch"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <inputData id="InputData_0rzlopl" name="Schufa-Auskunft">
+    <extensionElements>
+      <biodi:bounds x="373" y="81" width="125" height="45" />
+    </extensionElements>
+  </inputData>
+  <knowledgeSource id="KnowledgeSource_1wsvwx9" name="Z 0815&#10;Abs. 47 - 51">
+    <extensionElements>
+      <biodi:bounds x="591" y="196" width="100" height="63" />
+      <biodi:edge source="EignungAlsAbteilungsleiter">
+        <biodi:waypoints x="526" y="228" />
+        <biodi:waypoints x="591" y="228" />
+      </biodi:edge>
+    </extensionElements>
+    <authorityRequirement>
+      <requiredDecision href="#EignungAlsAbteilungsleiter" />
+    </authorityRequirement>
+  </knowledgeSource>
+  <decision id="Bewerber" name="Bewerber">
+    <extensionElements>
+      <biodi:bounds x="346" y="372" width="180" height="80" />
+      <biodi:edge source="mentorVorhanden">
+        <biodi:waypoints x="434" y="537" />
+        <biodi:waypoints x="434" y="452" />
+      </biodi:edge>
+    </extensionElements>
+    <informationRequirement>
+      <requiredDecision href="#mentorVorhanden" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_0g5kcys" hitPolicy="COLLECT" aggregation="SUM">
+      <input id="InputClause_1hd869t" label="Alter">
+        <inputExpression id="LiteralExpression_0qf6njv" typeRef="long">
+          <text>alter</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0jheksv" label="Familienstand">
+        <inputExpression id="LiteralExpression_1x3umg2" typeRef="string">
+          <text>familienstand</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0o8p5xn" label="Vertragsverhältnis">
+        <inputExpression id="LiteralExpression_0bijdz3" typeRef="string">
+          <text>vertragsverhaeltnis</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_1lcw9vw">
+          <text>"studierend","arbeitssuchend","angestellt","selbstständig"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_1kbwkkm" label="hat einen Mentor">
+        <inputExpression id="LiteralExpression_0vhhhaa" typeRef="boolean">
+          <text>mentorVorhanden</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_1sv6tcv" label="Bewerber Bewertung" name="erreichtePunktzahl" typeRef="long" />
+      <rule id="DecisionRule_1mba2pl">
+        <description>Grundwert</description>
+        <inputEntry id="UnaryTests_0wtj6qs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10i9yl2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0l9x08f">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0zb2cza">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_04giu3y">
+          <text>10</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1uyk2y3">
+        <inputEntry id="UnaryTests_0xq8tbs">
+          <text>[25..34]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_16een86">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12d224p">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15r5gl2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ch2rof">
+          <text>5</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0ixy7of">
+        <inputEntry id="UnaryTests_0lg44va">
+          <text>[35..44]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dsr227">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ftvj2n">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1r57oj8">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0vb3vw5">
+          <text>10</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1nml80r">
+        <inputEntry id="UnaryTests_1ttl1eb">
+          <text>&gt; 45</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_14rylnl">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_14829ly">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0vj41ch">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_04fucm1">
+          <text>25</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0pvg95f">
+        <inputEntry id="UnaryTests_0gjmdcb">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0y6owkr">
+          <text>"verheiratet"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ta5anx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0afpzsh">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1gw7ywr">
+          <text>5</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1qe7rcm">
+        <inputEntry id="UnaryTests_0f5c5n9">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_03scxvj">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qpu5hd">
+          <text>"befristet"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0tyb411">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ca1c4f">
+          <text>5</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_09gt1he">
+        <inputEntry id="UnaryTests_1qcfux8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0x0ibb8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0791eo8">
+          <text>"unbefristet"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0kr5dsq">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1kh6zri">
+          <text>10</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0nyom1i">
+        <inputEntry id="UnaryTests_0wjs01c">
+          <text>&lt; 25</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1fqopux">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05xyt02">
+          <text>"Probezeit"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0jkr80e">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dxzqkp">
+          <text>-20</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0dam7w9">
+        <inputEntry id="UnaryTests_1umt12v">
+          <text>&gt;= 25</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_003q8lx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ork440">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0j2fbky">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0byavkh">
+          <text>20</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <knowledgeSource id="KnowledgeSource_0eoxsqn" name="Z 0815 Abs. 10 - 14">
+    <extensionElements>
+      <biodi:bounds x="591" y="380" width="100" height="63" />
+      <biodi:edge source="Bewerber">
+        <biodi:waypoints x="526" y="412" />
+        <biodi:waypoints x="591" y="412" />
+      </biodi:edge>
+    </extensionElements>
+    <authorityRequirement>
+      <requiredDecision href="#Bewerber" />
+    </authorityRequirement>
+  </knowledgeSource>
+  <inputData id="InputData_1186f82" name="Bewilligungs-Historie">
+    <extensionElements>
+      <biodi:bounds x="156" y="204" width="125" height="45" />
+    </extensionElements>
+  </inputData>
+  <decision id="mentorVorhanden" name="Mentor vorhanden">
+    <extensionElements>
+      <biodi:bounds x="344" y="537" width="180" height="80" />
+    </extensionElements>
+    <decisionTable id="DecisionTable_1hrmemw" hitPolicy="FIRST">
+      <input id="InputClause_12b3xf8" label="Nachname">
+        <inputExpression id="LiteralExpression_1a0rwlh" typeRef="string">
+          <text>mentorNachname</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1edp7xf" label="Vorname">
+        <inputExpression id="LiteralExpression_0db9dsp" typeRef="string">
+          <text>mentorVorname</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_07zit9w" label="Mentor vorhanden?" name="mentorVorhanden" typeRef="boolean" />
+      <rule id="DecisionRule_0ey914n">
+        <inputEntry id="UnaryTests_18gwnm1">
+          <text>not("")</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1hp9bxx">
+          <text>not("")</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1r9od4c">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_161ov9u">
+        <inputEntry id="UnaryTests_07ck14j">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1d2sfb5">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0oa0f8b">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

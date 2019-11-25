@@ -85,11 +85,6 @@ public class DmnToolsImpl implements DmnTools {
 	}
 
 	@Override
-	public void dmn2Java(final File source) {
-		dmn2Java(source, DmnEngine.standAlone);
-	}
-
-	@Override
 	public void dmn2Java(final File source, final DmnEngine dmnEngine) {
 		checkForErrors();
 		consoleText("read", source.getPath());
@@ -98,10 +93,16 @@ public class DmnToolsImpl implements DmnTools {
 		final DmnStructure structure = new DmnStructureImpl(dmn);
 		final List<String> javaFile = structure.transform(outputPackage, dmnEngine);
 		final StringBuilder javaFileName = new StringBuilder();
-		javaFileName.append(DmnUtils.namingConvention(dmn.getDefinitions().getId(), "class"));
+		javaFileName.append("Dmn");
+		javaFileName.append(DmnUtils.namingConvention(dmn.getDefinitions().getId(), "intern"));
 		javaFileName.append(dmnEngine == DmnEngine.camunda ? "Delegate" : "");
 		javaFileName.append(".java");
 		writeJavaClass(javaFile, javaFileName.toString());
+	}
+
+	@Override
+	public void dmn2Java(final String source) {
+		dmn2Java(new File(resourcesDirectory + "/" + source), DmnEngine.standAlone);
 	}
 
 	@Override

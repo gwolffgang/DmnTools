@@ -2,20 +2,16 @@ package de.materna.dmntools.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
 import org.camunda.bpm.model.dmn.HitPolicy;
 import org.camunda.bpm.model.dmn.impl.instance.DecisionImpl;
 import org.camunda.bpm.model.dmn.impl.instance.DecisionTableImpl;
-import org.camunda.bpm.model.dmn.impl.instance.InputImpl;
 import org.camunda.bpm.model.dmn.instance.Decision;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
-import org.camunda.bpm.model.dmn.instance.DmnElement;
 import org.camunda.bpm.model.dmn.instance.Input;
 import org.camunda.bpm.model.dmn.instance.InputEntry;
-import org.camunda.bpm.model.dmn.instance.LiteralExpression;
 import org.camunda.bpm.model.dmn.instance.Output;
 import org.camunda.bpm.model.dmn.instance.OutputEntry;
 import org.camunda.bpm.model.dmn.instance.Rule;
@@ -38,30 +34,6 @@ public class DmnTemplateImpl implements DmnTemplate {
 	}
 
 	@Override
-	public void addCamundaExecuteMethodGetVariables() {
-		final String inputsString = this.dmn.getInputVariablesString(true).replaceAll("final ", "");
-		if (!inputsString.isEmpty()) {
-			final List<String> variables = Arrays.asList(inputsString.split(", "));
-			for (final String variable : variables) {
-				final List<String> parts = Arrays.asList(variable.split(" "));
-				addLine("\t\tfinal ".concat(DmnUtils.getJavaVariableType(parts.get(0))).concat(" ")
-						.concat(parts.get(1)).concat(" = (").concat(parts.get(0))
-						.concat(") execution.getVariable(\"").concat(parts.get(1)).concat("\");"));
-			}
-		}
-	}
-
-	@Override
-	public void addCamundaExecuteMethodMainMethodCall() {
-		addLine("\t\tfinal "
-				.concat(this.dmn.getTypeRefToReturn(
-						(DecisionTable) this.dmn.getMainDecision().getExpression(), this.dmnEngine))
-				.concat(" resultOfDmn = decision")
-				.concat(DmnUtils.namingConvention(this.dmn.getMainDecision().getId(), "intern"))
-				.concat("(").concat(this.dmn.getInputVariablesString(false) + ");"));
-	}
-
-	@Override
 	public void addCamundaExecuteMethodSetVariable() {
 		if ((this.dmn.getMainDecision() != null) && DmnUtils.isDmnElementType(
 				this.dmn.getMainDecision().getExpression(), DecisionTableImpl.class)) {
@@ -69,36 +41,42 @@ public class DmnTemplateImpl implements DmnTemplate {
 					((DecisionTable) this.dmn.getMainDecision().getExpression()).getOutputs());
 			final String resultName = "result"
 					.concat(DmnUtils.namingConvention(this.dmn.getDefinitions().getId(), "intern"));
-			addLine("\t\texecution.setVariable(\""
-					.concat((outputs.size() == 1) && (outputs.get(0).getName() != null)
-							? outputs.get(0).getName()
-							: resultName)
-					.concat("\", resultOfDmn);"));
+			final String outputVariable = (outputs.size() == 1)
+					&& (outputs.get(0).getName() != null) ? outputs.get(0).getName() : resultName;
+			addLine("\t\texecution.setVariable(\"".concat(outputVariable)
+					.concat("\", inputVariables.get(\"".concat(outputVariable).concat("\"));")));
 		}
 	}
 
 	@Override
-	public void addDecisionTableMethodFooter() {
+	public void addDecisionTableMethodFooter(final Decision decision) {
 		addLine("\t\t}");
-		final String outputVariableName = this.dmn
-				.getOutputVariableName(this.dmn.getCurrentDecisionTable());
-		if (DmnUtils.getDecisionTableType(this.dmn.getCurrentDecisionTable()).equals("nn")) {
-			addLine("\t\t".concat(outputVariableName).concat(" = new Gson().toJson(outputList);"));
+		final String mapName = DmnUtils.namingConvention(decision.getId(), "variable");
+		if (DmnUtils.getDecisionTableType((DecisionTable) decision.getExpression()).contains("n")) {
+			final String list = DmnUtils
+					.getDecisionTableType((DecisionTable) decision.getExpression()).equals("nn")
+							? "List"
+							: "";
+			addLine("\t\tinputVariables.put(\"".concat(mapName).concat(list).concat("\", ")
+					.concat(mapName).concat(list).concat(");"));
+		} else {
+			final DecisionTable table = (DecisionTable) decision.getExpression();
+			if ((table.getHitPolicy() == HitPolicy.COLLECT) && (table.getAggregation() != null)) {
+				@SuppressWarnings({ "unchecked", "rawtypes" })
+				final List<Output> outputs = new ArrayList(table.getOutputs());
+				addLine("\t\tinputVariables.put(\"".concat(outputs.get(0).getName()).concat("\", ")
+						.concat("result);"));
+			}
 		}
-		addLine("\t\treturn ".concat(outputVariableName).concat(";"));
 		addLine("\t}");
 	}
 
 	@Override
-	public void addDecisionTableMethodHeader(final String methodName) {
+	public void addDecisionTableMethodHeader(final Decision decision) {
 		addEmptyLine();
-		addLine("\tprivate "
-				.concat(this.dmn.getTypeRefToReturn(this.dmn.getCurrentDecisionTable(),
-						this.dmnEngine))
-				.concat(" decision").concat(DmnUtils.namingConvention(methodName, "intern"))
-				.concat("(")
-				.concat(this.dmn.getInputVariablesString(true, this.dmn.getCurrentDecisionTable()))
-				.concat(") {"));
+		addLine("\tprivate void decision"
+				.concat(DmnUtils.namingConvention(decision.getId(), "intern"))
+				.concat("(Map<String, Object> inputVariables) {"));
 	}
 
 	@Override
@@ -111,28 +89,21 @@ public class DmnTemplateImpl implements DmnTemplate {
 
 	@Override
 	public void addDecisionTableMethodInputVariable(final String typeRef, final String variableName,
-			final String requiredDecisionId, final DecisionTable decisionTable) {
+			final String requiredDecisionId, final Decision decision) {
 		final String source = "decision"
 				.concat(DmnUtils.namingConvention(requiredDecisionId, "intern")).concat("(")
-				.concat(this.dmn.getInputVariablesString(false, decisionTable)).concat(")");
+				.concat(this.dmn.getInputVariablesString(false, decision)).concat(")");
 		addDecisionTableMethodInputVariable(typeRef, variableName, source);
 	}
 
 	@Override
-	public void addDecisionTableMethodOutputVariable(final String variableType,
-			final String variableName, final String initiation) {
-		addLine("\t\t".concat(variableType).concat(" ").concat(variableName).concat(" = ")
-				.concat(initiation).concat(";"));
-		addEmptyLine();
-	}
-
-	@Override
-	public void addDecisionTableMethodRuleCondition(final Rule rule, final List<DmnElement> elems,
-			final boolean firstRule) {
-		final HitPolicy hitPolicy = this.dmn.getCurrentDecisionTable().getHitPolicy();
+	public void addDecisionTableMethodRuleCondition(final Decision decision, final Rule rule,
+			final List<Input> inputs, final boolean firstRule) {
+		final DecisionTable table = (DecisionTable) decision.getExpression();
+		final HitPolicy hitPolicy = table.getHitPolicy();
 		final List<InputEntry> inputEntries = new ArrayList<>(rule.getInputEntries());
 		final StringBuilder line = new StringBuilder();
-		final String tableType = DmnUtils.getDecisionTableType(this.dmn.getCurrentDecisionTable());
+		final String tableType = DmnUtils.getDecisionTableType(table);
 		if (firstRule) {
 			line.append("\t\tif (");
 		} else {
@@ -146,77 +117,88 @@ public class DmnTemplateImpl implements DmnTemplate {
 		}
 		int entry = 0;
 		final StringJoiner joiner = new StringJoiner(" && ");
-		for (final DmnElement elem : elems) {
-			if (DmnUtils.isDmnElementType(elem, InputImpl.class)) {
-				final String inputEntry = inputEntries.get(entry++).getTextContent();
-				joiner.add(buildCondition((Input) elem, inputEntry.trim()));
-			}
+		for (final Input input : inputs) {
+			final String inputEntry = inputEntries.get(entry++).getTextContent();
+			joiner.add(buildCondition(decision, input, inputEntry.trim()));
 		}
 		line.append(joiner).append(") {");
 		addStringBuilder(line);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void addDecisionTableMethodRuleOutput(final Rule rule) {
-		final String outputVariableName = this.dmn
-				.getOutputVariableName(this.dmn.getCurrentDecisionTable());
-		final List<Output> outputs = new ArrayList<>(
-				this.dmn.getCurrentDecisionTable().getOutputs());
+	public void addDecisionTableMethodRuleOutput(final Decision decision, final Rule rule) {
+		final DecisionTable table = (DecisionTable) decision.getExpression();
+		final String outputVariableName = this.dmn.getOutputVariableName(decision);
 		final List<OutputEntry> outputEntries = new ArrayList<>(rule.getOutputEntries());
-		final HitPolicy hitPolicy = this.dmn.getCurrentDecisionTable().getHitPolicy();
-		switch (DmnUtils.getDecisionTableType(this.dmn.getCurrentDecisionTable())) {
+		final HitPolicy hitPolicy = table.getHitPolicy();
+		final String outputClassName = "Output"
+				.concat(DmnUtils.namingConvention(decision.getId(), "intern"));
+		final List<Output> outputs = new ArrayList(table.getOutputs());
+		final String mapName = DmnUtils.namingConvention(decision.getId(), "variable");
+		switch (DmnUtils.getDecisionTableType(table)) {
 		case "11":
 			if (hitPolicy == HitPolicy.COLLECT) {
 				final String outputText = outputEntries.get(0).getTextContent();
-				switch (this.dmn.getCurrentDecisionTable().getAggregation()) {
+				switch (table.getAggregation()) {
 				case SUM:
-					addLine("\t\t\t".concat(outputVariableName).concat(" += ").concat(outputText)
-							.concat(";"));
+					addLine("\t\t\tresult += ".concat(outputText).concat(";"));
 					break;
 				case MIN:
-					addLine("\t\t\t".concat(outputVariableName).concat(" = Math.min(")
-							.concat(outputText).concat(", output);"));
+					addLine("\t\t\tresult = Math.min(".concat(outputText).concat(", result);"));
 					break;
 				case MAX:
-					addLine("\t\t\t".concat(outputVariableName).concat(" = Math.max(")
-							.concat(outputText).concat(", output);"));
+					addLine("\t\t\tresult = Math.max(".concat(outputText).concat(", result);"));
 					break;
 				case COUNT:
-					addLine("\t\t\t".concat(outputVariableName).concat("++;"));
+					addLine("\t\t\tresult++;");
 					break;
 				}
 			} else {
-				boolean isEnum = false;
-				final String typeRef = this.dmn
-						.getTypeRefToReturn(this.dmn.getCurrentDecisionTable(), this.dmnEngine);
-				if (!typeRef.equals("String") && !typeRef.equals("boolean")
-						&& !typeRef.equals("double") && !typeRef.equals("int")
-						&& !typeRef.equals("LocalDateTime")) {
-					isEnum = true;
-				}
-				addLine("\t\t\t".concat(outputVariableName).concat(isEnum ? ".value = " : " = ")
-						.concat(outputEntries.get(0).getTextContent()).concat(";"));
+				addLine("\t\t\tinputVariables.put(\"".concat(outputVariableName).concat("\", ")
+						.concat(outputEntries.get(0).getTextContent()).concat(");"));
 			}
 			break;
 		case "1n":
-			addLine("\t\t\t".concat(outputVariableName).concat(".add(")
-					.concat(outputEntries.get(0).getTextContent()).concat(");"));
+			addLine("\t\t\t".concat(mapName).concat(".put(\"").concat(outputVariableName)
+					.concat("\", ").concat(outputEntries.get(0).getTextContent()).concat(");"));
 			break;
 		case "n1":
-			for (int output = 0; output < rule.getOutputEntries().size(); output++) {
-				final LiteralExpression outputEntry = outputEntries.get(output);
-				addLine("\t\t\t".concat(outputVariableName).concat(".put(\"")
-						.concat(outputs.get(output).getName()).concat("\", ")
-						.concat(outputEntry.getTextContent()).concat(");"));
+
+			for (int entryNr = 0; entryNr < rule.getOutputEntries().size(); entryNr++) {
+				final OutputEntry entry = outputEntries.get(entryNr);
+				final String outputName = outputs.get(entryNr).getName();
+				addLine("\t\t\t".concat(mapName).concat(".put(\"").concat(outputName).concat("\", ")
+						.concat(entry.getTextContent()).concat(");"));
 			}
 			break;
 		case "nn":
-			final String outputMethodName = "Output".concat(
-					DmnUtils.namingConvention(this.dmn.getCurrentDecision().getId(), "intern"));
-			addLine("\t\t\t".concat(outputMethodName).concat(" result = new ")
-					.concat(outputMethodName).concat("(")
+			addLine("\t\t\t".concat(mapName).concat(" = new ").concat(outputClassName).concat("(")
 					.concat(this.dmn.getOutputValuesString(rule)).concat(");"));
-			addLine("\t\t\toutputList.add(result);");
+			addLine("\t\t\t" + mapName + "List.add(" + mapName + ");");
+		}
+	}
+
+	@Override
+	public void addDecisionTableMethodSubDecisionCall(final Decision requiredDecision) {
+		addLine("\t\tdecision".concat(DmnUtils.namingConvention(requiredDecision.getId(), "intern"))
+				.concat("(inputVariables);"));
+	}
+
+	@Override
+	public void addDecisionTableMethodVariableMaps(final Decision decision) {
+		if (DmnUtils.getDecisionTableType((DecisionTable) decision.getExpression()).equals("nn")) {
+			addLine("\t\tfinal ArrayList<Output"
+					.concat(DmnUtils.namingConvention(decision.getId(), "intern")).concat("> ")
+					.concat(DmnUtils.namingConvention(decision.getId(), "variable"))
+					.concat("List = new ArrayList<>();"));
+			addLine("\t\tOutput".concat(DmnUtils.namingConvention(decision.getId(), "intern"))
+					.concat(" ").concat(DmnUtils.namingConvention(decision.getId(), "variable"))
+					.concat(" = null;"));
+		} else {
+			addLine("\t\tMap<String, Object> "
+					.concat(DmnUtils.namingConvention(decision.getId(), "variable"))
+					.concat(" = new HashMap<>();"));
 		}
 	}
 
@@ -226,24 +208,48 @@ public class DmnTemplateImpl implements DmnTemplate {
 	}
 
 	@Override
-	public void addExecuteMethod() {
+	public void addExecuteMethods() {
 		switch (this.dmnEngine) {
 		case standAlone:
-			addLine("\tpublic "
-					.concat(this.dmn.getTypeRefToReturn(
-							(DecisionTable) this.dmn.getMainDecision().getExpression(),
-							this.dmnEngine))
-					.concat(" execute(").concat(this.dmn.getInputVariablesString(true))
-					.concat(") {"));
-			addLine("\t\treturn decision"
+			addLine("\tpublic ".concat(this.dmn.getTypeRefToReturn()).concat(" execute(")
+					.concat(this.dmn.getInputVariablesString(true)).concat(") {"));
+			final List<Input> inputs = this.dmn.getInputs(true, false, true,
+					this.dmn.getMainDecision());
+			addLine("\t\tfinal Map<String, Object> inputVariables = new HashMap<>();");
+			for (final Input input : inputs) {
+				if (!DmnUtils.getInputVariableType(input).endsWith("formula")) {
+					final String inputVariableName = this.dmn.getInputVariableName(input,
+							"container");
+					addLine("\t\tinputVariables.put(\"".concat(inputVariableName)
+							.concat("\", ".concat(inputVariableName).concat(");")));
+				}
+			}
+			addLine("\t\treturn execute(inputVariables);");
+			addLine("\t}");
+			addEmptyLine();
+			addLine("\tpublic ".concat(this.dmn.getTypeRefToReturn())
+					.concat(" execute(final Map<String, Object> inputVariables) {"));
+			addLine("\t\tdecision"
 					.concat(DmnUtils.namingConvention(this.dmn.getMainDecision().getId(), "intern"))
-					.concat("(").concat(this.dmn.getInputVariablesString(false)).concat(");"));
+					.concat("(inputVariables);"));
+			final boolean tableNN = DmnUtils
+					.getDecisionTableType(
+							(DecisionTable) this.dmn.getMainDecision().getExpression())
+					.equals("nn");
+			addLine("\t\treturn "
+					.concat(tableNN ? "new Gson().toJson("
+							: "(".concat(this.dmn.getTypeRefToReturn()).concat(") "))
+					.concat("inputVariables.get(\"")
+					.concat(this.dmn.getOutputVariableName(this.dmn.getMainDecision()))
+					.concat("\")".concat(tableNN ? ")" : "").concat(";")));
 			break;
 		case camunda:
 			addLine("\t@Override");
 			addLine("\tpublic void execute(final DelegateExecution execution) throws Exception {");
-			addCamundaExecuteMethodGetVariables();
-			addCamundaExecuteMethodMainMethodCall();
+			addLine("\t\tMap<String, Object> inputVariables = execution.getVariables();");
+			final String mainDecision = "decision".concat(
+					DmnUtils.namingConvention(this.dmn.getMainDecision().getId(), "intern"));
+			addLine("\t\t".concat(mainDecision).concat("(inputVariables);"));
 			addCamundaExecuteMethodSetVariable();
 		}
 		addLine("\t}");
@@ -256,29 +262,23 @@ public class DmnTemplateImpl implements DmnTemplate {
 		if (this.dmnEngine == DmnEngine.camunda) {
 			addLine("import org.camunda.bpm.engine.delegate.DelegateExecution;");
 			addLine("import org.camunda.bpm.engine.delegate.JavaDelegate;");
-			if (this.dmn.existsTableType("n1")) {
-				addLine("import org.camunda.bpm.engine.variable.VariableMap;");
-				addLine("import org.camunda.bpm.engine.variable.Variables;");
-			}
 			addEmptyLine();
 		}
-		boolean emptyLineNeeded = false;
 		if (this.dmn.usesDate()) {
 			addLine("import java.time.LocalDateTime;");
-			emptyLineNeeded = true;
 		}
-		if (this.dmn.usesCollection("ArrayList")) {
+		if (this.dmn.usesCollection()) {
 			addLine("import java.util.ArrayList;");
-			emptyLineNeeded = true;
 		}
-		if (this.dmn.usesCollection("Map")) {
-			addLine("import java.util.HashMap;");
-			addLine("import java.util.Map;");
-			emptyLineNeeded = true;
-		}
-		if (emptyLineNeeded) {
-			addEmptyLine();
-		}
+		// if (this.dmn.usesFormula()) {
+		addLine("import java.math.BigDecimal;");
+		// }
+		addLine("import java.util.HashMap;");
+		addLine("import java.util.Map;");
+		addEmptyLine();
+		addLine("import org.kie.dmn.feel.lang.impl.FEELImpl;");
+		addLine("// <!-- https://mvnrepository.com/artifact/org.kie/kie-dmn-feel -->");
+		addEmptyLine();
 		if (this.dmn.existsTableType("nn")) {
 			addLine("import com.google.gson.Gson;");
 			addLine("// <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->");
@@ -293,8 +293,8 @@ public class DmnTemplateImpl implements DmnTemplate {
 
 	@Override
 	public void addMainClassHeader() {
-		addLine("public class "
-				.concat(DmnUtils.namingConvention(this.dmn.getDefinitions().getId(), "class"))
+		addLine("public class Dmn"
+				.concat(DmnUtils.namingConvention(this.dmn.getDefinitions().getId(), "intern"))
 				.concat(this.dmnEngine == DmnEngine.camunda ? "Delegate implements JavaDelegate"
 						: "")
 				.concat(" {"));
@@ -333,7 +333,7 @@ public class DmnTemplateImpl implements DmnTemplate {
 	}
 
 	@Override
-	public String buildCondition(final Input input, String match) {
+	public String buildCondition(final Decision decision, final Input input, String match) {
 		if (!match.equals("") && !match.equals("-")) {
 			final StringBuilder condition = new StringBuilder();
 			boolean negation = false;
@@ -346,7 +346,7 @@ public class DmnTemplateImpl implements DmnTemplate {
 			condition.append((parts.size() > 1) || negation ? "(" : "");
 			final StringJoiner joiner = new StringJoiner(" || ");
 			for (final String part : parts) {
-				joiner.add(buildConditionPart(input, part.trim()));
+				joiner.add(buildConditionPart(decision, input, part.trim()));
 			}
 			condition.append(joiner);
 			condition.append((parts.size() > 1) || negation ? ")" : "");
@@ -357,9 +357,11 @@ public class DmnTemplateImpl implements DmnTemplate {
 	}
 
 	@Override
-	public String buildConditionPart(final Input input, final String elem) {
+	public String buildConditionPart(final Decision decision, final Input input,
+			final String elem) {
+		final DecisionTable table = (DecisionTable) decision.getExpression();
 		final String inputVariableName = DmnUtils
-				.namingConvention(this.dmn.getInputVariableName(input), "variable");
+				.namingConvention(this.dmn.getInputVariableName(input, "component"), "variable");
 		final String typeRef = input.getInputExpression().getTypeRef()
 				.substring(input.getInputExpression().getTypeRef().indexOf(":") == -1 ? 0
 						: input.getInputExpression().getTypeRef().indexOf(":") + 1);
@@ -420,8 +422,8 @@ public class DmnTemplateImpl implements DmnTemplate {
 			if (!elem.isEmpty() && elem.startsWith("\"") && elem.endsWith("\"")) {
 				return inputVariableName.concat(".equals(").concat(elem).concat(")");
 			} else {
-				for (final Input item : this.dmn.getCurrentDecisionTable().getInputs()) {
-					if (this.dmn.getInputVariableName(item).equals(elem)) {
+				for (final Input item : table.getInputs()) {
+					if (this.dmn.getInputVariableName(item, "all").equals(elem)) {
 						return inputVariableName.concat(".equals(").concat(elem).concat(")");
 					} else {
 						return "false";

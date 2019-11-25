@@ -7,28 +7,16 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.camunda.bpm.model.dmn.HitPolicy;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
 import org.camunda.bpm.model.dmn.instance.DmnModelElementInstance;
+import org.camunda.bpm.model.dmn.instance.Input;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
 public abstract class DmnUtils {
-
-	public static String buildVariableNameRegEx() {
-		final String ADDITIONAL_NAME_SYMBOLS = "[\\./\\-’'+*]";
-		final String NAME_START_CHAR = "[?A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF"
-				.concat("\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F")
-				.concat("\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD")
-				.concat("\\u10000-\\uEFFFF]");
-		final String NAME_PART_CHAR = "(".concat(NAME_START_CHAR)
-				.concat("|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])");
-		final String NAME_START = NAME_START_CHAR.concat(NAME_PART_CHAR).concat("+");
-		final String NAME_PART = NAME_PART_CHAR.concat(NAME_PART_CHAR).concat("+");
-		final String NAME = NAME_START.concat("(").concat(NAME_PART).concat("|")
-				.concat(ADDITIONAL_NAME_SYMBOLS).concat(")+");
-		return NAME;
-	}
 
 	public static int countCharacter(final String str, final char c) {
 		int count = 0;
@@ -67,6 +55,16 @@ public abstract class DmnUtils {
 				return filename.endsWith(".dmn");
 			}
 		}));
+	}
+
+	public static String getInputVariableType(final Input input) {
+		final String camundaInputVariable = input.getCamundaInputVariable();
+		final String inputExpression = input.getInputExpression().getTextContent();
+		final boolean isNamed = DmnUtils.isFeelName(camundaInputVariable);
+		final boolean isVariable = DmnUtils.isFeelName(inputExpression);
+		final boolean isEmpty = inputExpression.isEmpty();
+		return (isNamed ? "named " : "unnamed ")
+				.concat(isVariable ? "variable" : (isEmpty ? "empty" : "formula"));
 	}
 
 	public static String getJavaVariableClass(final String typeRef) {
@@ -113,6 +111,14 @@ public abstract class DmnUtils {
 		return dmnModelElementInstance.getClass() == classType;
 	}
 
+	public static boolean isFeelName(final String string) {
+		if (string != null) {
+			final Matcher matcher = QUALIFIED_NAME().matcher(string);
+			return (matcher.matches() && !string.matches("(null|true|false|\\-)"));
+		}
+		return false;
+	}
+
 	public static boolean isRange(final String string) {
 		return (string.startsWith("[") || string.startsWith("]") || string.startsWith("(")
 				|| string.startsWith(")"))
@@ -121,12 +127,8 @@ public abstract class DmnUtils {
 				&& string.contains("..") && !string.contains("...");
 	}
 
-	public static boolean isVariableName(final String string) {
-		return string.matches(buildVariableNameRegEx()) && !string.matches("(null|true|false|\\-)");
-	}
-
 	public static String namingConvention(final String name, final String type) {
-		final String[] parts = name.split("[/\\-. ]");
+		final String[] parts = name.split("[/\\- ]");
 		final StringBuilder reducedName = new StringBuilder();
 		reducedName.append(parts[0]);
 		for (int partNr = 1; partNr < parts.length; partNr++) {
@@ -150,7 +152,27 @@ public abstract class DmnUtils {
 			}
 			finalName.append(reducedName.substring(1));
 		}
-		return finalName.toString().replaceAll("[-#.]", "");
+		return finalName.toString().replaceAll("[-#]", "");
+	}
+
+	public static Pattern QUALIFIED_NAME() {
+		final Pattern ADDITIONAL_NAME_SYMBOLS = Pattern.compile("[\\./\\-’'+*]");
+		final Pattern NAME_START_CHAR = Pattern
+				.compile("[?A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF"
+						.concat("\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F")
+						.concat("\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD")
+						.concat("\\u10000-\\uEFFFF]"));
+		final Pattern NAME_PART_CHAR = Pattern.compile("(".concat(NAME_START_CHAR.pattern())
+				.concat("|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])"));
+		final Pattern NAME_PART = Pattern
+				.compile(NAME_PART_CHAR.pattern().concat(NAME_PART_CHAR.pattern()).concat("+"));
+		final Pattern NAME_START = Pattern.compile(
+				NAME_START_CHAR.pattern().concat("").concat(NAME_PART_CHAR.pattern()).concat("+"));
+		final Pattern NAME = Pattern
+				.compile(NAME_START.pattern().concat("(").concat(NAME_PART.pattern()).concat("|")
+						.concat(ADDITIONAL_NAME_SYMBOLS.pattern()).concat(")+"));
+		final Pattern QUALIFIED_NAME = Pattern.compile(NAME + "+([.](" + NAME + "+){1})*");
+		return QUALIFIED_NAME;
 	}
 
 	public static ArrayList<String> splitMatch(final String match) {

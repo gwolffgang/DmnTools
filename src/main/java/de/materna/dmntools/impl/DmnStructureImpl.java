@@ -7,15 +7,12 @@ import java.util.List;
 import org.camunda.bpm.model.dmn.HitPolicy;
 import org.camunda.bpm.model.dmn.impl.instance.DecisionImpl;
 import org.camunda.bpm.model.dmn.impl.instance.DecisionTableImpl;
-import org.camunda.bpm.model.dmn.impl.instance.InputExpressionImpl;
-import org.camunda.bpm.model.dmn.impl.instance.InputImpl;
-import org.camunda.bpm.model.dmn.impl.instance.OutputImpl;
 import org.camunda.bpm.model.dmn.instance.Decision;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
-import org.camunda.bpm.model.dmn.instance.DmnElement;
 import org.camunda.bpm.model.dmn.instance.DrgElement;
 import org.camunda.bpm.model.dmn.instance.InformationRequirement;
 import org.camunda.bpm.model.dmn.instance.Input;
+import org.camunda.bpm.model.dmn.instance.InputExpression;
 import org.camunda.bpm.model.dmn.instance.Output;
 import org.camunda.bpm.model.dmn.instance.OutputEntry;
 import org.camunda.bpm.model.dmn.instance.Rule;
@@ -27,171 +24,129 @@ import de.materna.dmntools.DmnTemplate;
 import de.materna.dmntools.DmnUtils;
 
 public class DmnStructureImpl implements DmnStructure {
-	public final DmnMetaModel dmn;
+	private final DmnMetaModel dmn;
 
-	public DmnEngine dmnEngine;
+	private DmnEngine dmnEngine;
 
 	public DmnStructureImpl(final DmnMetaModel dmn) {
 		this.dmn = dmn;
 	}
 
 	@Override
-	public void addDecisionTableMethod(final DmnTemplate code) {
-		final String methodName = this.dmn.getCurrentDecision().getId();
-		code.addDecisionTableMethodHeader(methodName);
-		addDecisionTableMethodInputVariables(
-				this.dmn.getInAndOutputs(false, true, this.dmn.getCurrentDecisionTable()), code);
-		addDecisionTableMethodOutputVariable(code);
-		addDecisionTableMethodRules(
-				this.dmn.getInAndOutputs(false, false, this.dmn.getCurrentDecisionTable()), code);
-		code.addDecisionTableMethodFooter();
+	public void addDecisionTableMethod(final Decision decision, final DmnTemplate code) {
+		code.addDecisionTableMethodHeader(decision);
+		addDecisionTableMethodSubDecisionCalls(decision, code);
+		addDecisionTableMethodInputVariables(decision, code);
+		addDecisionTableMethodCollectVariables(decision, code);
+		addDecisionTableMethodRules(decision, code);
+		code.addDecisionTableMethodFooter(decision);
 	}
 
 	@Override
-	public void addDecisionTableMethodInputVariable(final DmnElement elem, final DmnTemplate code) {
-		if (DmnUtils.isDmnElementType(elem, InputImpl.class)) {
-			final Input input = (Input) elem;
-			if (DmnUtils.isDmnElementType(input.getInputExpression(), InputExpressionImpl.class)) {
-				final String expressionText = input.getInputExpression().getTextContent();
-				switch (this.dmn.getInputVariableType(input)) {
-				case "named variable":
-				case "unnamed variable":
-				case "named empty":
-					for (final InformationRequirement informationRequirement : this.dmn
-							.getCurrentDecision().getInformationRequirements()) {
-						if (informationRequirement.getRequiredDecision() != null) {
-							final Decision requiredDecision = informationRequirement
-									.getRequiredDecision();
-							if (DmnUtils.isDmnElementType(requiredDecision.getExpression(),
-									DecisionTableImpl.class)) {
-								final DecisionTable decisionTable = (DecisionTable) requiredDecision
-										.getExpression();
-								for (final Output output : decisionTable.getOutputs()) {
-									if (output.getName()
-											.equals(this.dmn.getInputVariableName(input))) {
-										code.addDecisionTableMethodInputVariable(
-												input.getInputExpression().getTypeRef(),
-												output.getName(), requiredDecision.getId(),
-												decisionTable);
-									}
-								}
-							}
-						}
-					}
-					if (this.dmn.getInputVariableType(input).equals("named variable")) {
-						code.addDecisionTableMethodInputVariable(
-								input.getInputExpression().getTypeRef(),
-								this.dmn.getInputVariableName(input),
-								DmnUtils.namingConvention(expressionText, "variable"));
-					}
+	public void addDecisionTableMethodCollectVariables(final Decision decision,
+			final DmnTemplate code) {
+		if (DmnUtils.isDmnElementType(decision.getExpression(), DecisionTableImpl.class)) {
+			final DecisionTable table = (DecisionTable) decision.getExpression();
+			if ((table.getHitPolicy() == HitPolicy.COLLECT) && (table.getAggregation() != null)) {
+				switch (table.getAggregation()) {
+				case MIN:
+					code.addLine("\t\tdouble result = Double.MAX_VALUE;");
 					break;
-				case "named formula":
-				case "unnamed formula":
-					code.addDecisionTableMethodInputVariable(
-							input.getInputExpression().getTypeRef(),
-							this.dmn.getInputVariableName(input),
-							this.dmn.getCorrectedFormula(input));
+				case MAX:
+					code.addLine("\t\tdouble result = Double.MIN_VALUE;");
 					break;
+				case SUM:
+				case COUNT:
+					code.addLine("\t\tdouble result = 0.0;");
 				}
 			}
-		} else { // Outputs
-			final Output output = (Output) elem;
-			code.addDecisionTableMethodInputVariable(output.getTypeRef(), output.getName(),
-					((Decision) output.getParentElement().getParentElement()).getId(),
-					(DecisionTable) output.getParentElement());
 		}
 	}
 
 	@Override
-	public void addDecisionTableMethodInputVariables(final List<DmnElement> elems,
+	public void addDecisionTableMethodInputVariable(final Decision decision, final Input input,
 			final DmnTemplate code) {
-		for (final DmnElement elem : elems) {
-			if (DmnUtils.isDmnElementType(elem, OutputImpl.class)) {
-				addDecisionTableMethodInputVariable(elem, code);
+		final InputExpression inputExpression = input.getInputExpression();
+		final String inputExpressionText = inputExpression.getTextContent().isEmpty()
+				? input.getCamundaInputVariable()
+				: inputExpression.getTextContent();
+		String typeRef = DmnUtils.getJavaVariableType(inputExpression.getTypeRef());
+		String variableName = this.dmn.getInputVariableName(input, "component");
+		String source = "(".concat(typeRef).concat(") new FEELImpl().evaluate(\"")
+				.concat(inputExpressionText).concat("\", inputVariables)");
+		if (!DmnUtils.getInputVariableType(input).endsWith("empty")
+				&& (typeRef.equals("double") || typeRef.equals("long") || typeRef.equals("int"))) {
+			source = "new BigDecimal(new FEELImpl().evaluate(\"".concat(inputExpressionText)
+					.concat("\", inputVariables).toString());\n".concat("\t\t").concat(typeRef)
+							.concat(" ").concat(variableName).concat(" = "));
+			variableName += "Big";
+			source += variableName.concat("." + typeRef + "Value()");
+			typeRef = "BigDecimal";
+		}
+		code.addDecisionTableMethodInputVariable(typeRef, variableName, source);
+	}
+
+	@Override
+	public void addDecisionTableMethodInputVariables(final Decision decision,
+			final DmnTemplate code) {
+		final List<Input> inputs = this.dmn.getInputs(false, true, true, decision);
+		for (final Input input : inputs) {
+			if (!DmnUtils.getInputVariableType(input).endsWith("formula")) {
+				addDecisionTableMethodInputVariable(decision, input, code);
 			}
 		}
-		for (final DmnElement elem : elems) {
-			if (DmnUtils.isDmnElementType(elem, InputImpl.class)
-					&& !this.dmn.getInputVariableType((Input) elem).endsWith("formula")) {
-				addDecisionTableMethodInputVariable(elem, code);
+		for (final Input input : inputs) {
+			if (DmnUtils.getInputVariableType(input).endsWith("formula")) {
+				addDecisionTableMethodInputVariable(decision, input, code);
 			}
 		}
-		for (final DmnElement elem : elems) {
-			if (DmnUtils.isDmnElementType(elem, InputImpl.class)
-					&& this.dmn.getInputVariableType((Input) elem).endsWith("formula")) {
-				addDecisionTableMethodInputVariable(elem, code);
-			}
+		if (DmnUtils.getDecisionTableType((DecisionTable) decision.getExpression()).contains("n")) {
+			code.addDecisionTableMethodVariableMaps(decision);
 		}
 	}
 
 	@Override
-	public void addDecisionTableMethodOutputVariable(final DmnTemplate code) {
-		String outputVariableType = this.dmn.getTypeRefToReturn(this.dmn.getCurrentDecisionTable(),
-				this.dmnEngine);
-		final String outputVariableName = this.dmn
-				.getOutputVariableName(this.dmn.getCurrentDecisionTable());
-		String initation = "";
-		switch (DmnUtils.getDecisionTableType(this.dmn.getCurrentDecisionTable())) {
-		case "11":
-			if (outputVariableType.equals("boolean")) {
-				initation = "false";
-			} else if (outputVariableType.equals("double")) {
-				initation = "0.0";
-			} else if (outputVariableType.equals("long")) {
-				initation = "0L";
-			} else if (outputVariableType.equals("int")) {
-				initation = "0";
-			} else {
-				initation = "null";
-			}
-			break;
-		case "1n":
-			initation = "new ".concat(outputVariableType).concat("()");
-			break;
-		case "n1":
-			initation = (this.dmnEngine == DmnEngine.camunda ? "Variables.createVariables"
-					: "new Hash".concat(outputVariableType)).concat("()");
-			break;
-		case "nn":
-			final String decisionId = DmnUtils
-					.namingConvention(this.dmn.getCurrentDecision().getId(), "intern");
-			outputVariableType = "final ArrayList<Output".concat(decisionId).concat(">");
-			initation = "new ArrayList<>()";
-			code.addDecisionTableMethodOutputVariable(outputVariableType, "outputList", initation);
-			outputVariableType = "String";
-			initation = "\"\"";
-		}
-		code.addDecisionTableMethodOutputVariable(outputVariableType, outputVariableName,
-				initation);
-	}
+	public void addDecisionTableMethodRules(final Decision decision, final DmnTemplate code) {
+		final DecisionTable table = (DecisionTable) decision.getExpression();
+		final List<Input> inputs = this.dmn.getInputs(false, true, true, decision);
 
-	@Override
-	public void addDecisionTableMethodRules(final List<DmnElement> elems, final DmnTemplate code) {
-		List<Rule> rules = new ArrayList<>(this.dmn.getCurrentDecisionTable().getRules());
-		final HitPolicy hitPolicy = this.dmn.getCurrentDecisionTable().getHitPolicy();
+		List<Rule> rules = new ArrayList<>(table.getRules());
+		final HitPolicy hitPolicy = table.getHitPolicy();
 		if ((hitPolicy == HitPolicy.PRIORITY) || (hitPolicy == HitPolicy.OUTPUT_ORDER)) {
 			final List<Rule> prioritizedRules = new ArrayList<>();
-			prioritizeRules(prioritizedRules, rules, 0);
+			prioritizeRules(decision, prioritizedRules, rules, 0);
 			rules = prioritizedRules;
 		}
 		for (int rule = 0; rule < rules.size(); rule++) {
-			code.addDecisionTableMethodRuleCondition(rules.get(rule), elems, rule == 0);
-			code.addDecisionTableMethodRuleOutput(rules.get(rule));
+			code.addDecisionTableMethodRuleCondition(decision, rules.get(rule), inputs, rule == 0);
+			code.addDecisionTableMethodRuleOutput(decision, rules.get(rule));
+		}
+	}
+
+	@Override
+	public void addDecisionTableMethodSubDecisionCalls(final Decision decision,
+			final DmnTemplate code) {
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		final List<InformationRequirement> informationRequirements = new ArrayList(
+				decision.getInformationRequirements());
+		for (final InformationRequirement informationRequirement : informationRequirements) {
+			if (DmnUtils.isDmnElementType(informationRequirement.getRequiredDecision(),
+					DecisionImpl.class)) {
+				final Decision requiredDecision = informationRequirement.getRequiredDecision();
+				code.addDecisionTableMethodSubDecisionCall(requiredDecision);
+			}
 		}
 	}
 
 	@Override
 	public void addMainClass(final DmnTemplate code) {
 		code.addMainClassHeader();
-		code.addExecuteMethod();
+		code.addExecuteMethods();
 		for (final DrgElement drgElement : this.dmn.getDefinitions().getDrgElements()) {
 			if (DmnUtils.isDmnElementType(drgElement, DecisionImpl.class)) {
-				this.dmn.setCurrentDecision((Decision) drgElement);
-				if (DmnUtils.isDmnElementType(this.dmn.getCurrentDecision().getExpression(),
-						DecisionTableImpl.class)) {
-					this.dmn.setCurrentDecisionTable(
-							((DecisionTable) this.dmn.getCurrentDecision().getExpression()));
-					addDecisionTableMethod(code);
+				final Decision decision = (Decision) drgElement;
+				if (DmnUtils.isDmnElementType(decision.getExpression(), DecisionTableImpl.class)) {
+					addDecisionTableMethod(decision, code);
 				}
 			}
 		}
@@ -215,14 +170,36 @@ public class DmnStructureImpl implements DmnStructure {
 					.concat("Please correct the dmn-file and try again."));
 			System.exit(-1);
 		}
+		for (final Input input : this.dmn.getAllInputs()) {
+			if (DmnUtils.getInputVariableType(input).contains("variable")
+					&& input.getInputExpression().getTextContent().contains(".")) {
+				final String variableName = this.dmn.getInputVariableName(input, "variable");
+				for (final DecisionTable table : this.dmn.getAllDecisionTables()) {
+					if (((Decision) table.getParentElement()).getId().equals(variableName)
+							&& DmnUtils.getDecisionTableType(table).equals("nn")) {
+						System.err.println("ERROR: Sorry, using the collected ouputs "
+								.concat("of a DecisionTable with more than one output ")
+								.concat("as an input in an InputExpression is not ")
+								.concat("supported yet."));
+						System.err.print(
+								"Decision-Id: \"" + ((Decision) table.getParentElement()).getId());
+						System.err.print("\"; InputExpression: \""
+								+ this.dmn.getInputVariableName(input, "all"));
+						System.err.println("\". Transformation aborded.");
+						System.exit(-1);
+					}
+				}
+			}
+		}
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void prioritizeRules(final List<Rule> prioritizedRules, final List<Rule> rulesLeft,
-			final int outputNr) {
+	public void prioritizeRules(final Decision decision, final List<Rule> prioritizedRules,
+			final List<Rule> rulesLeft, final int outputNr) {
+		final DecisionTable table = (DecisionTable) decision.getExpression();
 		@SuppressWarnings("rawtypes")
-		final List<Output> outputs = new ArrayList(this.dmn.getCurrentDecisionTable().getOutputs());
+		final List<Output> outputs = new ArrayList(table.getOutputs());
 		if (outputNr < outputs.size()) {
 			final Output output = outputs.get(outputNr);
 			if (output.getOutputValues() != null) {
@@ -241,11 +218,11 @@ public class DmnStructureImpl implements DmnStructure {
 					if ((matches.size() == 1) || (outputNr == (outputs.size() - 1))) {
 						prioritizedRules.addAll(matches);
 					} else {
-						prioritizeRules(prioritizedRules, matches, outputNr + 1);
+						prioritizeRules(decision, prioritizedRules, matches, outputNr + 1);
 					}
 				}
 			} else {
-				prioritizeRules(prioritizedRules, rulesLeft, outputNr + 1);
+				prioritizeRules(decision, prioritizedRules, rulesLeft, outputNr + 1);
 			}
 		} else {
 			prioritizedRules.addAll(rulesLeft);

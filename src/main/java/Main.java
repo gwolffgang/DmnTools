@@ -16,9 +16,5 @@ public class Main {
 		// transform the DMN-file(s)
 		dmntools.dmn2JavaAll();
 		dmntools.dmn2JavaAll(DmnEngine.camunda);
-
-		// testing the created file(s)
-//		final HaustiereDmn dmn = new HaustiereDmn();
-//		System.out.println(dmn.execute("Hund", 2, 1.0));
 	}
 }

@@ -23,7 +23,6 @@
   </repository>
 </repositories>
 
-
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -42,10 +41,18 @@
 			<artifactId>camunda-engine-dmn</artifactId>
 			<version>7.11.0</version>
 		</dependency>
-		<dependency>
-            <groupId>org.camunda.bpm.extension.feel.scala</groupId>
-            <artifactId>feel-engine-factory</artifactId>
-            <version>1.9.0</version>
+        <!-- https://mvnrepository.com/artifact/org.kie/kie-dmn-feel -->
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>kie-dmn-feel</artifactId>
+            <version>7.29.0.Final</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-simple</artifactId>
+    <version>1.7.29</version>
+</dependency>
+        
 	</dependencies>
 </project>

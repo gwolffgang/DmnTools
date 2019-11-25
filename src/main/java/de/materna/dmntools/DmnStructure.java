@@ -2,20 +2,24 @@ package de.materna.dmntools;
 
 import java.util.List;
 
-import org.camunda.bpm.model.dmn.instance.DmnElement;
+import org.camunda.bpm.model.dmn.instance.Decision;
+import org.camunda.bpm.model.dmn.instance.Input;
 import org.camunda.bpm.model.dmn.instance.Rule;
 
 public interface DmnStructure {
 
-	void addDecisionTableMethod(final DmnTemplate code);
+	void addDecisionTableMethod(final Decision decision, final DmnTemplate code);
 
-	void addDecisionTableMethodInputVariable(final DmnElement elem, final DmnTemplate code);
+	void addDecisionTableMethodCollectVariables(final Decision decision, final DmnTemplate code);
 
-	void addDecisionTableMethodInputVariables(final List<DmnElement> elems, final DmnTemplate code);
+	void addDecisionTableMethodInputVariable(final Decision decision, final Input input,
+			final DmnTemplate code);
 
-	void addDecisionTableMethodOutputVariable(final DmnTemplate code);
+	void addDecisionTableMethodInputVariables(final Decision decision, final DmnTemplate code);
 
-	void addDecisionTableMethodRules(final List<DmnElement> elems, final DmnTemplate code);
+	void addDecisionTableMethodRules(final Decision decision, final DmnTemplate code);
+
+	void addDecisionTableMethodSubDecisionCalls(final Decision decision, final DmnTemplate code);
 
 	void addMainClass(final DmnTemplate code);
 
@@ -23,8 +27,8 @@ public interface DmnStructure {
 
 	void checkForErrors();
 
-	void prioritizeRules(final List<Rule> prioritizedRules, final List<Rule> rulesLeft,
-			final int outputNr);
+	void prioritizeRules(final Decision decision, final List<Rule> prioritizedRules,
+			final List<Rule> rulesLeft, final int outputNr);
 
 	List<String> transform(final String outputPackage);
 
